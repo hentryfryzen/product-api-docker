@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   app:
-    image: laravelphp/php-fpm:8.1
+    image: php:8.2-fpm  # Updated PHP version to 8.2
     container_name: app
     volumes:
       - .:/var/www/html
