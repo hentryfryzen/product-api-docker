@@ -4,28 +4,52 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Product;
-use Illuminate\Support\Facades\Storage;
+use App\Helpers\ResponseHelper;
 
 class ProductController extends Controller
 {
+    // Method to fetch all products
+    public function index()
+    {
+        try {
+            $products = Product::orderBy('id', 'desc')->get();
+            return ResponseHelper::success('Products fetched successfully.', $products, 200);
+        } catch (\Exception $e) {
+            return ResponseHelper::error('Failed to fetch products: ' . $e->getMessage(), 500);
+        }
+    }
+
+    // Method to fetch a single product by ID
+    public function show($id)
+    {
+        try {
+            $product = Product::find($id);
+
+            if (!$product) {
+                return ResponseHelper::error('Product not found', 404);
+            }
+
+            return ResponseHelper::success('Product fetched successfully.', $product, 200);
+        } catch (\Exception $e) {
+            return ResponseHelper::error('Failed to fetch product: ' . $e->getMessage(), 500);
+        }
+    }
+
+    // Method to import products
     public function import(Request $request)
     {
         try {
-            // Validate file
+            // Validate the uploaded file
             $request->validate([
                 'products_file' => 'required|mimes:json|max:2048'
             ]);
 
-            // Get the uploaded file
+            // Get and read the file
             $file = $request->file('products_file');
-
-            // Read the file content
             $jsonData = file_get_contents($file);
-
-            // Decode the JSON data into an array
             $products = json_decode($jsonData, true);
 
-            // Process each product and insert into the database
+            // Insert or update products
             foreach ($products as $product) {
                 Product::updateOrCreate(
                     ['id' => $product['id']],
@@ -39,9 +63,9 @@ class ProductController extends Controller
                 );
             }
 
-            return response()->json(['message' => 'Products imported successfully.'], 200);
+            return ResponseHelper::success('Products imported successfully.', $products, 200);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to import products: ' . $e->getMessage()], 500);
+            return ResponseHelper::error('Failed to import products: ' . $e->getMessage(), 500);
         }
     }
 }

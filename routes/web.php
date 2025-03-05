@@ -10,9 +10,13 @@ Route::get('/products', function () {
 });
 
 // Route to import products
+Route::get('/products', [ProductController::class, 'index']);  // Fetch all products
+Route::get('/products/{id}', [ProductController::class, 'show']);
 Route::post('products/import', [ProductController::class, 'import']);
 
-// Root route to show welcome page
-Route::get('/', function () {
-    return view('welcome');
+Route::fallback(function () {
+    return response()->json([
+        'statusCode' => 404,
+        'message' => 'API endpoint not found.'
+    ], 404);
 });
