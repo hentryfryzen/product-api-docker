@@ -2,38 +2,77 @@
 
 namespace App\Console\Commands;
 
+use Illuminate\Support\Facades\Http;
 use Illuminate\Console\Command;
-use App\Models\Product;
-use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 
 class ImportProducts extends Command
 {
-    protected $signature = 'import:products {file} {percentage}';
-    protected $description = 'Import products from a JSON file and adjust prices by the given percentage';
+    // Command signature
+    protected $signature = 'import:adjust-prices {adjustmentPercentage} {file=products.json}';
 
+    // Command description
+    protected $description = 'Import products from a JSON file via API, apply a price adjustment, and update the database.';
+
+    /**
+     * Execute the console command.
+     */
     public function handle()
     {
-        $file = $this->argument('file');
-        $percentage = $this->argument('percentage');
+        $file = $this->argument('file'); // Default file: products.json
+        $adjustmentPercentage = (float) $this->argument('adjustmentPercentage'); // Price adjustment
 
-        if (!File::exists($file)) {
-            $this->error('File does not exist!');
+        // Check if file exists
+        if (!file_exists($file)) {
+            $this->error("The file {$file} does not exist.");
             return;
         }
 
-        $productsData = json_decode(File::get($file), true);
-
-        foreach ($productsData as $data) {
-            $price = $data['price'] + ($data['price'] * ($percentage / 100));
-            Product::create([
-                'name' => $data['name'],
-                'link' => $data['link'],
-                'image_link' => $data['image_link'],
-                'price' => $price,
-                'currency' => $data['currency'],
-            ]);
+        // Read file in chunks to avoid memory issues
+        $fileContent = file_get_contents($file);
+        if (!$fileContent) {
+            $this->error("Failed to read file {$file}.");
+            return;
         }
 
-        $this->info('Products imported and prices updated!');
+        // Validate JSON format
+        $products = json_decode($fileContent, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $this->error('Invalid JSON format in the file.');
+            return;
+        }
+
+        $fileName = basename($file);
+        $tempPath = storage_path("app/{$fileName}");
+
+        // Store file temporarily
+        file_put_contents($tempPath, $fileContent);
+
+        // API request in chunks (if needed)
+        $chunks = array_chunk($products, 50); // Process 50 records per batch
+
+        foreach ($chunks as $index => $batch) {
+            $this->info("Processing batch " . ($index + 1) . " of " . count($chunks));
+
+            $response = Http::attach(
+                'file', file_get_contents($tempPath), $fileName
+            )->post(env('APP_URL') . '/adjust-prices', [
+                'adjustmentPercentage' => $adjustmentPercentage,
+            ]);
+
+            // Handle API response
+            if ($response->successful()) {
+                $this->info("Batch " . ($index + 1) . " processed successfully.");
+            } else {
+                $responseData = $response->json() ?? [];
+                $errorMessage = $responseData['message'] ?? 'Something went wrong.';
+                $this->error("Batch " . ($index + 1) . " failed: " . $errorMessage);
+            }
+        }
+
+        // Delete temporary file
+        unlink($tempPath);
+
+        $this->info('All batches processed successfully.');
     }
 }
