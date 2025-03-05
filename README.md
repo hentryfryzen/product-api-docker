@@ -64,3 +64,71 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+
+
+
+
+# PHP 8.2 with PostgreSQL Dockerfile
+
+This Dockerfile sets up a PHP 8.2 environment with PostgreSQL client and necessary extensions (`pgsql`, `pdo_pgsql`) to work with PostgreSQL databases.
+
+## Dockerfile Overview
+
+This Dockerfile performs the following tasks:
+
+1. **Base Image:**
+   - Uses the official `php:8.2-fpm` image as the base.
+
+2. **Install Dependencies:**
+   - Installs `libpq-dev`, which is required to compile PostgreSQL extensions.
+   - Installs `postgresql-client`, which is necessary to interact with PostgreSQL databases via the `psql` command-line client.
+   
+3. **Install PHP Extensions:**
+   - Configures and installs the `pgsql` and `pdo_pgsql` extensions for PostgreSQL support in PHP.
+   
+4. **Clean Up:**
+   - Cleans up the package manager cache to reduce image size.
+
+5. **Verify Extensions:**
+   - Verifies that the `pdo_pgsql` extension has been installed correctly by running the `php -m` command and filtering for `pdo_pgsql`.
+
+## Detailed Command Explanation
+
+### 1. **FROM php:8.2-fpm**
+
+This sets the base image for the container. We are using PHP 8.2 with FPM (FastCGI Process Manager), which is commonly used for PHP applications in web servers like Nginx.
+
+### 2. **RUN apt-get update && apt-get install -y libpq-dev postgresql-client**
+
+- `apt-get update`: Updates the package list for the system's package manager.
+- `apt-get install -y libpq-dev postgresql-client`: Installs two packages:
+  - `libpq-dev`: A development library that provides headers and files for compiling PostgreSQL extensions.
+  - `postgresql-client`: Installs the `psql` client, which allows you to interact with PostgreSQL databases from the command line.
+
+### 3. **RUN docker-php-ext-configure pgsql --with-pgsql=/usr/local/pgsql**
+
+This command configures the `pgsql` PHP extension with the PostgreSQL installation path. It prepares the extension for installation by telling the PHP build system where PostgreSQL is located.
+
+### 4. **RUN docker-php-ext-install pgsql pdo_pgsql**
+
+Installs the `pgsql` and `pdo_pgsql` PHP extensions:
+- `pgsql`: Allows PHP to communicate directly with PostgreSQL databases.
+- `pdo_pgsql`: Provides PDO (PHP Data Objects) support for PostgreSQL, which is used for database interaction with a consistent interface.
+
+### 5. **RUN rm -rf /var/lib/apt/lists/***
+
+This command cleans up the local package cache, which helps reduce the final image size by removing unnecessary files created during package installation.
+
+### 6. **RUN php -m | grep pdo_pgsql**
+
+This command verifies that the `pdo_pgsql` extension is successfully installed by listing the installed PHP modules (`php -m`) and filtering for `pdo_pgsql`.
+
+## How to Build and Run
+
+### 1. Build the Docker Image
+
+In the directory where your `Dockerfile` is located, open a terminal and run the following command to build the Docker image:
+
+```bash
+docker build -t php-postgres-image .

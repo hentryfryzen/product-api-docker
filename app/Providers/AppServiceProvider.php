@@ -19,6 +19,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::except([
+        //     'submit'
+        // ]);
+
+        \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::except([
+            'products/import', // Exclude this route from CSRF protection
+            // 'stripe/webhook',  // Example: Exclude Stripe webhook route
+        ]);
     }
 }
