@@ -21,7 +21,47 @@ Copy the `.env.example` file to `.env` and configure database and application se
 ```bash
 cp .env.example .env
 ```
+--Note--
+```bash
+Docker Desktop File Sharing Setup
+Step-by-Step Guide to Set Up File Sharing in Docker Desktop
+1. Open Docker Desktop
 
+    Launch Docker Desktop from your applications menu.
+
+2. Go to Settings
+
+    In the Docker Desktop window, click on the gear icon (⚙️) in the top-right corner to open Settings.
+
+3. Navigate to Resources
+
+    In the left-hand sidebar of the Settings window, click on Resources.
+
+4. Select File Sharing
+
+    Under Resources, select the File Sharing tab. This section allows you to specify which directories on your local system can be shared with Docker containers.
+
+5. Add a Directory to Share
+
+    In the File Sharing section, you'll see a list of directories that are currently shared. To add a new directory:
+        Click the + (Add) button.
+        Navigate to the directory you want to share (e.g., your project folder), and select it.
+        Click Open or Add to confirm the selection.
+
+6. Apply the Changes
+
+    After adding the directory, click the Apply & Restart button at the bottom-right of the Settings window to apply the changes.
+    Docker Desktop will restart to apply the new file sharing settings.
+
+7. Verify the Shared Directory
+
+    After Docker restarts, you can verify that the directory is shared by checking the Virtual File Shares list. The directory you added should now appear in the list.
+
+Summary:
+
+By following these steps, you enable Docker Desktop to share a specific directory (like your project folder) between your local machine and Docker containers. This makes it easier to access and modify files inside the container from your local system.
+
+```
 ### 3. Set Up and Run the Project
 Make the `setup.sh` script executable and run it:
 ```bash
