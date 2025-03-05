@@ -54,6 +54,18 @@ docker-compose up -d
 ```bash
 docker ps
 ```
+## Import Products with Price Adjustments
+
+To adjust product prices from a JSON file, use the following Artisan command:
+
+```bash
+php artisan import:adjust-prices <adjustment_percentage> <path_to_products_json_file>
+```
+Example:
+```bash
+php artisan import:adjust-prices 10 /Applications/MAMP/htdocs/Hentry/product-api/products.json
+```
+This will apply a 10% price adjustment to the products listed in the specified JSON file.
 
 ## Import Products API
 To import products using the API, run the following `curl` command:

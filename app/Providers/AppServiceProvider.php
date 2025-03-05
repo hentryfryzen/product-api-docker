@@ -25,7 +25,7 @@ class AppServiceProvider extends ServiceProvider
 
         \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::except([
             'products/import', // Exclude this route from CSRF protection
-            // 'stripe/webhook',  // Example: Exclude Stripe webhook route
+            'products/adjust-prices',  // Example: Exclude Stripe webhook route
         ]);
     }
 }
